@@ -1,0 +1,7 @@
+---
+# This role installs gcc and registers a handler to remove it when the play terminates
+
+- name: Install gcc
+  yum: name=gcc state=latest
+  notify:
+    - Uninstall gcc

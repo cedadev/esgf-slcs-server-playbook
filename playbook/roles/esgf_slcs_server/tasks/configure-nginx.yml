@@ -1,0 +1,41 @@
+---
+# Tasks related to the Nginx configuration of the ESGF SLCS server
+
+- name: Create static dir
+  file: path=/var/www/static state=directory
+
+- name: Collect static files
+  shell: "{{ application_home }}/venv/bin/django-admin collectstatic --noinput --clear"
+  environment:
+    DJANGO_SETTINGS_MODULE: esgf_slcs_server.settings
+
+- name: Transfer ownership of static files to nginx
+  file: >
+    path=/var/www/static state=directory recurse=yes
+    owner=nginx group=nginx mode=0755
+
+- name: Remove executable permission from static files
+  command: find /var/www/static -type f -exec chmod 0644 {} \;
+
+- name: Install SSL certificate
+  copy:
+    content: "{{ ssl_certificate }}"
+    dest: /etc/nginx/certs/esgf_slcs_server.pem
+    mode: "u=r,g=,o="
+  notify:
+    - Restart nginx
+
+- name: Install SSL private key
+  copy:
+    content: "{{ ssl_private_key }}"
+    dest: /etc/nginx/certs/esgf_slcs_server.key
+    mode: "u=r,g=,o="
+  notify:
+    - Restart nginx
+
+- name: Install Nginx config
+  template: >
+    src=templates/nginx.conf.j2
+    dest=/etc/nginx/conf.d/esgf_slcs_server.conf
+  notify:
+    - Restart nginx

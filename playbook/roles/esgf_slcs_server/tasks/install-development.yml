@@ -1,0 +1,23 @@
+---
+# In development mode, we just install the packages we require and let them install
+# their dependencies at the most recent acceptable version
+
+- name: Destroy previous venv
+  file: path={{ application_home }}/venv state=absent
+  become: yes
+  become_user: "{{ application_user }}"
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Install ESGF SLCS Server from /code/esgf-slcs-server
+  pip: >
+    name=/code/esgf-slcs-server
+    virtualenv={{ application_home }}/venv
+    virtualenv_command=virtualenv-2.7
+    extra_args='-e'
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Set code_location fact
+  set_fact:
+    code_location: /code/esgf-slcs-server

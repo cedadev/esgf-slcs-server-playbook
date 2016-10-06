@@ -1,0 +1,6 @@
+*~
+.DS_Store
+.project
+.pydevproject
+.vagrant
+playbook.retry

@@ -1,0 +1,16 @@
+---
+
+- include: install.yml
+
+- include: configure-databases.yml
+
+- include: install-test-ca.yml
+  when: use_test_ca
+
+- include: configure-application.yml
+
+- include: configure-waitress.yml
+  when: use_waitress_wsgi
+
+- include: configure-nginx.yml
+  when: use_nginx_proxy

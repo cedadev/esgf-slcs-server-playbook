@@ -1,0 +1,5 @@
+---
+
+- name: Restart ESGF SLCS Server
+  supervisorctl: name="esgf_slcs_server:" state=restarted
+  when: use_waitress_wsgi

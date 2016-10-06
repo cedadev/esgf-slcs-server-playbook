@@ -1,0 +1,65 @@
+---
+# Tasks related to the configuration of the Django application
+
+- name: Install Django settings file
+  template: >
+    src=templates/settings.py.j2
+    dest={{ code_location }}/esgf_slcs_server/settings.py
+  become: yes
+  become_user: "{{ application_user }}"
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Make config directory
+  file: path={{ application_home }}/conf state=directory
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Create Django secret file
+  shell: tr -dc '[:alnum:][:punct:]' < /dev/urandom | head -c 100 > {{ application_home }}/conf/dj_secret_key.txt
+  args:
+    creates: "{{ application_home }}/conf/dj_secret_key.txt"
+  become: yes
+  become_user: "{{ application_user }}"
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Set permissions on Django secret file
+  file: path={{ application_home }}/conf/dj_secret_key.txt mode="u=r,g=,o="
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Create ESGF userdb password file
+  copy: >
+    content={{ esgf_userdb.password }}
+    dest={{ application_home }}/conf/esgf_userdb_passwd.txt
+    mode="u=r,g=,o="
+  become: yes
+  become_user: "{{ application_user }}"
+  when: not use_dummy_userdb
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Install OnlineCA config
+  template: src=templates/onlineca.ini.j2 dest={{ application_home }}/conf/onlineca.ini
+  become: yes
+  become_user: "{{ application_user }}"
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Run database migrations
+  shell: "{{ application_home }}/venv/bin/django-admin migrate"
+  become: yes
+  become_user: "{{ application_user }}"
+  environment:
+    DJANGO_SETTINGS_MODULE: esgf_slcs_server.settings
+
+- name: Create Django superuser
+  shell: "{{ application_home }}/venv/bin/django-admin createsuperuser --noinput --username={{ django_superuser }} --email=notused@notused.com"
+  become: yes
+  become_user: "{{ application_user }}"
+  environment:
+    DJANGO_SETTINGS_MODULE: esgf_slcs_server.settings
+  register: create_superuser
+  changed_when: create_superuser.rc == 0
+  failed_when: "create_superuser.rc != 0 and 'duplicate key value violates unique constraint' not in create_superuser.stderr"

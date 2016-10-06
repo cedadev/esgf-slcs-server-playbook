@@ -1,0 +1,28 @@
+---
+# Tasks related to the installation of the test CA
+
+- name: Make config directory
+  file: path={{ application_home }}/conf state=directory
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Set CA location facts
+  set_fact:
+    onlineca_trustroots_dir: "{{ application_home }}/conf/trustroots"
+    onlineca_cert_file: "{{ application_home }}/conf/onlineca.crt"
+    onlineca_key_file: "{{ application_home }}/conf/onlineca.key"
+
+- name: Install test CA trustroots
+  copy: src=files/test_ca/trustroots/ dest={{ onlineca_trustroots_dir }}
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Install test CA certificate file
+  copy: src=files/test_ca/onlineca.crt dest={{ onlineca_cert_file }}
+  become: yes
+  become_user: "{{ application_user }}"
+
+- name: Install OnlineCA private key file
+  copy: src=files/test_ca/onlineca.key dest={{ onlineca_key_file }} mode="u=r,g=,o="
+  become: yes
+  become_user: "{{ application_user }}"

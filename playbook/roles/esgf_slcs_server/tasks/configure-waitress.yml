@@ -1,0 +1,18 @@
+---
+
+- name: Install Waitress
+  pip: >
+    name=waitress state=latest
+    virtualenv={{ application_home }}/venv
+    virtualenv_command=virtualenv-2.7
+  become: yes
+  become_user: "{{ application_user }}"
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Install supervisord config
+  template: >
+    src=templates/supervisord.conf.j2
+    dest=/etc/supervisord.d/esgf_slcs_server.conf
+  notify:
+    - Restart supervisord

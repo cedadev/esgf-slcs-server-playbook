@@ -1,0 +1,14 @@
+---
+
+- hosts: esgf_slcs_servers
+  remote_user: root
+  force_handlers: yes
+  roles:
+    - git
+    - svn
+    - gcc
+    - python27
+    - postgresql
+    - { role: nginx, when: use_nginx_proxy }
+    - { role: supervisord, when: use_waitress_wsgi }
+    - esgf_slcs_server

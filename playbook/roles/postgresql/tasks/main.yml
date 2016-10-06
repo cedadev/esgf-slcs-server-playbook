@@ -1,0 +1,18 @@
+---
+# This role installs PostgreSQL
+
+- name: Install PostgreSQL
+  yum: name={{ item }} state=latest
+  with_items:
+    - postgresql
+    - postgresql-server
+    - postgresql-devel
+
+- name: Initialise PostgreSQL
+  command: service postgresql initdb
+  register: postgres_initdb
+  failed_when: "postgres_initdb.rc != 0 and 'Data directory is not empty!' not in postgres_initdb.stdout"
+  changed_when: postgres_initdb.rc == 0
+
+- name: Start PostgreSQL service
+  service: name=postgresql state=started enabled=yes

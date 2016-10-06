@@ -1,0 +1,41 @@
+---
+# Tasks related to the configuration of databases
+
+- name: Install psycopg2 for system Python
+  yum: name=python-psycopg2 state=latest
+
+- name: Create PostgreSQL IDENT user for application
+  postgresql_user: >
+    name={{ application_user }}
+    state=present
+    role_attr_flags=NOCREATEDB,NOCREATEROLE,NOSUPERUSER
+  become: yes
+  become_user: postgres
+
+- name: Create ESGF SLCS Server database
+  postgresql_db: name=esgf_slcs_server encoding="UTF-8" owner={{ application_user }}
+  become: yes
+  become_user: postgres
+
+- name: Create dummy userdb database
+  postgresql_db: name=esgf_security encoding="UTF-8" owner={{ application_user }}
+  become: yes
+  become_user: postgres
+  register: create_userdb
+  when: use_dummy_userdb
+
+- name: Install dummy userdb script
+  copy: src=files/create-user-table.sql dest=/tmp/create-user-table.sql
+  when: create_userdb|changed
+
+- name: Install dummy userdb data
+  command: psql -d esgf_security -f /tmp/create-user-table.sql -a
+  become: yes
+  become_user: "{{ application_user }}"
+  when: create_userdb|changed
+  register: create_user_table
+  failed_when: "'ERROR' in create_user_table.stderr"
+
+- name: Remove dummy userdb script
+  file: path=/tmp/create-user-table.sql state=absent
+  when: create_userdb|changed

@@ -1,0 +1,14 @@
+---
+# This role installs Python 2.7
+
+- name: Install IUS Community repository
+  yum: name=https://{{ ius_distro }}.iuscommunity.org/ius-release.rpm state=present
+
+- name: Install Python 2.7
+  yum: name={{ item }} state=latest
+  with_items:
+    - python27
+    - python27-devel
+    - python27-virtualenv
+    - python27-pip
+    - python27-setuptools

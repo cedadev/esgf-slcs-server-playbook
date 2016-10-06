@@ -1,0 +1,5 @@
+---
+# This role installs gcc and registers a handler to remove it
+
+- name: Uninstall gcc
+  yum: name=gcc state=absent

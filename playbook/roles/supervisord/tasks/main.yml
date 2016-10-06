@@ -1,0 +1,26 @@
+---
+# This role installs and configures supervisord using pip
+#
+# It includes a handler for restarting supervisord
+
+- name: Install supervisord
+  pip: name=supervisor state=latest executable=pip2.7
+  notify:
+    - Restart supervisord
+
+- name: Create /etc/supervisord.d directory
+  file: path=/etc/supervisord.d state=directory
+
+- name: Create /var/log/supervisor directory
+  file: path=/var/log/supervisor state=directory
+
+- name: Install supervisord init.d script
+  copy: src=files/supervisord.initd dest=/etc/init.d/supervisord mode=0755
+
+- name: Install /etc/supervisord.conf config
+  copy: src=files/supervisord.conf dest=/etc/supervisord.conf
+  notify:
+    - Restart supervisord
+
+- name: Ensure supervisord starts at boot time
+  service: name=supervisord enabled=yes

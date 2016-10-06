@@ -1,0 +1,10 @@
+[program:esgf_slcs_server]
+command = {{ application_home }}/venv/bin/waitress-serve --host=127.0.0.1 --port=50%(process_num)02d esgf_slcs_server.wsgi:application
+autostart = true
+autorestart = true
+process_name = %(program_name)s-%(process_num)01d
+numprocs = {{ waitress_instances }}
+numprocs_start = 0
+redirect_stderr = true
+stdout_logfile = /var/log/supervisor/%(program_name)s-%(process_num)01d.log
+user = {{ application_user }}

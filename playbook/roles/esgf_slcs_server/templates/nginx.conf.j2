@@ -1,0 +1,77 @@
+# Upstream configuration (listing of waitress processes)
+upstream esgf_slcs_server {
+{% for i in range(waitress_instances) %}
+    server 127.0.0.1:50{{ "%02d"|format(i) }};
+{% endfor %}
+}
+
+server {
+    server_name  {{ server_name }};
+
+    # SSL configuration from Mozilla SSL config generator
+    # https://mozilla.github.io/server-side-tls/ssl-config-generator/
+    # Generated 08/01/2016
+    listen 443 ssl;
+
+    # If we get into this block with an incorrect Host header (e.g. because it is
+    # the only https block), then reject the request
+    if ( $http_host != $server_name ) {
+        return 400;
+    }
+
+    ssl_certificate     /etc/nginx/certs/esgf_slcs_server.pem;
+    ssl_certificate_key /etc/nginx/certs/esgf_slcs_server.key;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_tickets off;
+
+    # Enables server-side protection from BEAST attacks
+    # http://blog.ivanristic.com/2013/09/is-beast-still-a-threat.html
+    ssl_prefer_server_ciphers on;
+    # Disable SSLv3 since it's less secure then TLS http://en.wikipedia.org/wiki/Secure_Sockets_Layer#SSL_3.0
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:ECDHE-RSA-DES-CBC3-SHA:ECDHE-ECDSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA';
+
+    # Enable HSTS (HTTP Strict Transport Security) to avoid ssl stripping
+    # https://developer.mozilla.org/en-US/docs/Security/HTTP_Strict_Transport_Security
+    # https://en.wikipedia.org/wiki/SSL_stripping#SSL_stripping
+    # 15768000 seconds = 6 months
+    add_header Strict-Transport-Security max-age=15768000;
+
+    # Serve static files directly
+    location /static {
+        # Strip the /static prefix
+        rewrite ^/static/(.*) /$1 break;
+        root /var/www/static;
+    }
+
+    {% set proxy_settings %}
+        proxy_set_header        Host $http_host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        client_max_body_size       10m;
+        client_body_buffer_size    128k;
+        proxy_connect_timeout      60s;
+        proxy_send_timeout         90s;
+        proxy_read_timeout         90s;
+        proxy_buffering            off;
+        proxy_temp_file_write_size 64k;
+        proxy_pass                 http://esgf_slcs_server;
+        proxy_redirect             off;
+    {% endset %}
+
+    # Restrict access to the admin
+    location /admin {
+        allow {{ admin_ip_range }};
+        deny all;
+
+{{ proxy_settings }}
+    }
+
+    # Proxy configuration for OAuth server
+    location / {
+{{ proxy_settings }}
+    }
+}

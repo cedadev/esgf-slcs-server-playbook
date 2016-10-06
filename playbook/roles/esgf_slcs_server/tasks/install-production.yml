@@ -1,0 +1,46 @@
+---
+
+- name: Set code_location fact
+  set_fact:
+    code_location: "{{ application_home }}/src/esgf_slcs_server"
+
+- name: Clone ESGF SLCS Server from Github
+  git: >
+    repo=https://github.com/cedadev/esgf-slcs-server.git
+    version={{ esgf_slcs_server_version }}
+    dest={{ code_location }}
+    accept_hostkey=yes
+  become: yes
+  become_user: "{{ application_user }}"
+  register: esgf_slcs_clone
+
+- name: Destroy previous venv
+  file: path={{ application_home }}/venv state=absent
+  become: yes
+  become_user: "{{ application_user }}"
+  when: esgf_slcs_clone|changed
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Install ESGF SLCS Server dependencies
+  pip: >
+    requirements={{ code_location }}/requirements.txt
+    virtualenv={{ application_home }}/venv
+    virtualenv_command=virtualenv-2.7
+  become: yes
+  become_user: "{{ application_user }}"
+  when: esgf_slcs_clone|changed
+  notify:
+    - Restart ESGF SLCS Server
+
+- name: Install ESGF SLCS Server
+  pip: >
+    name={{ code_location }}
+    virtualenv={{ application_home }}/venv
+    virtualenv_command=virtualenv-2.7
+    extra_args='--no-deps -e'
+  become: yes
+  become_user: "{{ application_user }}"
+  when: esgf_slcs_clone|changed
+  notify:
+    - Restart ESGF SLCS Server
