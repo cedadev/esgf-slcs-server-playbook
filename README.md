@@ -59,6 +59,8 @@ $ vagrant ssh
 
 The ESGF SLCS Server will then be available at `https://<ip>`.
 
+The Django adminstration view for configuring OAuth is at: `https://<ip>/admin`.
+
 Ansible sets up a default user database with a test user:
 
 ```
