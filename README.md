@@ -7,12 +7,14 @@ This repository provides an Ansible playbook that can deploy a [SLCS Server for 
 
 See the [Vagrant documentation](https://www.vagrantup.com/docs/installation/) for installation details.
 
-Debian/Ubuntu/LinuxMint:
+### Debian/Ubuntu/LinuxMint:
 
 Ubuntu has a vagrant package but it is outdated. You can install Vagrant manually:
 
+```
 $ wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
 $ sudo dpkg -i vagrant_1.9.1_x86_64.deb
+```
 
 Install Vagrant plugins used for ESGF SLCS service deployment:
 
@@ -21,7 +23,7 @@ $ vagrant plugin install vagrant-reload
 $ vagrant plugin install ansible
 ```
 
-VirtualBox:
+### VirtualBox:
 
 Vagrant needs a recent [VirtualBox installation](https://www.virtualbox.org/wiki/Downloads).
 I'm using VirtualBox 5.1.
