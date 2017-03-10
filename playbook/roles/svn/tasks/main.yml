@@ -1,5 +1,0 @@
----
-# This role ensures that git is installed
-
-- name: Install subversion
-  yum: name=subversion state=latest

@@ -6,35 +6,16 @@ Vagrant.configure(2) do |config|
   # CentOS 6.8 base box
   config.vm.box = "box-cutter/centos68"
 
-  config.vm.network :private_network, type: "dhcp"
+  config.vm.network :private_network, ip: "172.28.128.7"
 
   # For development, use a shared folder to share a local clone of the
   # esgf-slcs-server Github repo with the vagrant VM
   config.vm.synced_folder "../esgf-slcs-server", "/code/esgf-slcs-server"
 
-  # Provider-specific configuration so you can fine-tune various
-  # backing providers for Vagrant. These expose provider-specific options.
-  # Example for VirtualBox:
-  #
-  # config.vm.provider "virtualbox" do |vb|
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
-  # end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
-
-  # Use a shell provisioner to (1) allow direct root access with the same key as
-  # the vagrant user and (2) disable SELinux
+  # Use a shell provisioner to disable SELinux before starting
   config.vm.provision :shell, inline: <<-SHELL
-echo "Copying SSH key to root..."
-mkdir -p /root/.ssh
-cp ~vagrant/.ssh/authorized_keys /root/.ssh
+set -x
 
-echo "Disabling SELinux..."
 cat > /etc/selinux/config <<-SELINUXCONF
 # This file controls the state of SELinux on the system.
 # SELINUX= can take one of these three values:
@@ -47,19 +28,16 @@ SELINUX=disabled
 #       strict - Full SELinux protection.
 SELINUXTYPE=targeted
 SELINUXCONF
+setenforce 0
 SHELL
 
-  # Disabling SELinux requires a reboot
-  #   This step requires the vagrant-reload plugin - to install, run:
-  #     vagrant plugin install vagrant-reload
-  config.vm.provision :reload
+  # Install the esgf-slcs-server using an on-machine installation
+  config.vm.provision "install", type: "shell", inline: <<-INSTALL
+set -x
 
-  # Provision the VM with the Ansible playbook
-  config.vm.provision :ansible do |ansible|
-    ansible.force_remote_user = false
-    ansible.playbook = "playbook/playbook.yml"
-    ansible.groups = {
-      "esgf_slcs_servers" => "default"
-    }
-  end
+yum install -y -q epel-release
+yum install -y -q ansible
+cd /vagrant
+ansible-playbook -i playbook/inventories/localhost -e "@playbook/overrides/development.yml" playbook/playbook.yml
+INSTALL
 end

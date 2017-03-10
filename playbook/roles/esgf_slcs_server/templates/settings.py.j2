@@ -25,8 +25,9 @@ ALLOWED_HOSTS = ['{{ server_name }}']
 {% endif %}
 
 # Read the secret key from a file
-SECRET_KEY_FILE = '{{ application_home }}/conf/dj_secret_key.txt'
-SECRET_KEY = open(SECRET_KEY_FILE).read().strip()
+SECRET_KEY_FILE = '{{ application_home }}/conf/app/secret_key.txt'
+with open(SECRET_KEY_FILE) as f:
+    SECRET_KEY = f.read().strip()
 
 # Logging settings
 DEFAULT_FROM_EMAIL = SERVER_EMAIL = '{{ server_email }}'
@@ -114,31 +115,31 @@ WSGI_APPLICATION = 'django_wsgi.handler.APPLICATION'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'esgf_slcs_server',
-    }
+        'ENGINE' : '{{ esgf_slcsdb.engine }}',
+        'NAME' : '{{ esgf_slcsdb.name }}',
+        {% if 'host' in esgf_slcsdb %}'HOST' : '{{ esgf_slcsdb.host }}',{% endif %}
+        {% if 'port' in esgf_slcsdb %}'PORT' : '{{ esgf_slcsdb.port }}',{% endif %}
+        {% if 'user' in esgf_slcsdb %}'USER' : '{{ esgf_slcsdb.user }}',{% endif %}
+    },
+    'userdb' : {
+        'ENGINE' : '{{ esgf_userdb.engine }}',
+        'NAME' : '{{ esgf_userdb.name }}',
+        {% if 'host' in esgf_userdb %}'HOST' : '{{ esgf_userdb.host }}',{% endif %}
+        {% if 'port' in esgf_userdb %}'PORT' : '{{ esgf_userdb.port }}',{% endif %}
+        {% if 'user' in esgf_userdb %}'USER' : '{{ esgf_userdb.user }}',{% endif %}
+    },
 }
-
-{% if use_dummy_userdb %}
-DATABASES.update({
-    'userdb': {
-        'ENGINE' : 'django.db.backends.postgresql',
-        'NAME' : 'esgf_security',
-    }
-})
-{% else %}
-ESGF_USERDB_PASSWD_FILE = '{{ application_home }}/conf/esgf_userdb_passwd.txt'
-DATABASES.update({
-    'userdb': {
-        'ENGINE' : 'django.db.backends.postgresql',
-        'NAME' : '{{ esgf_userdb.db_name }}',
-        'USER' : '{{ esgf_userdb.user }}',
-        'PASSWORD' : open(ESGF_USERDB_PASSWD_FILE).read().strip(),
-        'HOST' : '{{ esgf_userdb.host }}',
-        'PORT' : '{{ esgf_userdb.port }}',
-    }
-})
+{% if 'password' in esgf_slcsdb %}
+ESGF_SLCSDB_PASSWD_FILE = '{{ application_home }}/conf/app/slcsdb_passwd.txt'
+with open(ESGF_SLCSDB_PASSWD_FILE) as f:
+    DATABASES['default']['password'] = f.read().strip()
 {% endif %}
+{% if 'password' in esgf_userdb %}
+ESGF_USERDB_PASSWD_FILE = '{{ application_home }}/conf/app/userdb_passwd.txt'
+with open(ESGF_USERDB_PASSWD_FILE) as f:
+    DATABASES['userdb']['password'] = f.read().strip()
+{% endif %}
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -173,7 +174,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'esgf_slcs_server', 'static')]
-STATIC_ROOT = '/var/www/static'
+STATIC_ROOT = '{{ static_root }}'
 
 
 # URLs for login/logout
@@ -201,5 +202,5 @@ BASIC_AUTH_REALM = 'esgf.llnl.gov'
 # Configuration for the Online CA WSGI application
 # This is instantiated using the PasteDeploy app_factory, so the configuration below
 # corresponds to the global and local configs expected by that function
-ONLINECA_PASTEDEPLOY_CONF = 'config:{{ application_home }}/conf/onlineca.ini'
+ONLINECA_PASTEDEPLOY_CONF = 'config:{{ application_home }}/conf/app/onlineca.ini'
 ONLINECA_DJANGO_USER_TO_OPENID = 'esgf_auth.openid.django_user_to_openid'

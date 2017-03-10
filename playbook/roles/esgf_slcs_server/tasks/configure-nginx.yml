@@ -2,26 +2,40 @@
 # Tasks related to the Nginx configuration of the ESGF SLCS server
 
 - name: Create static dir
-  file: path=/var/www/static state=directory
+  file: path={{ static_root }} state=directory
 
 - name: Collect static files
-  shell: "{{ application_home }}/venv/bin/django-admin collectstatic --noinput --clear"
-  environment:
-    DJANGO_SETTINGS_MODULE: esgf_slcs_server.settings
+  shell: "{{ python_executable }} {{ code_location }}/manage.py collectstatic --noinput --clear"
 
 - name: Transfer ownership of static files to nginx
-  file: >
-    path=/var/www/static state=directory recurse=yes
-    owner=nginx group=nginx mode=0755
+  file:
+    path: "{{ static_root }}"
+    state: directory
+    recurse: yes
+    owner: nginx
+    group: nginx
+    mode: 0755
 
 - name: Remove executable permission from static files
-  command: find /var/www/static -type f -exec chmod 0644 {} \;
+  command: find {{ static_root }} -type f -exec chmod 0644 {} \;
+
+- name: Generate self-signed SSL certificate
+  command: >
+    openssl req -new -nodes -x509 -subj "{{ ssl_cert_subject }}" -days 3650
+    -keyout /etc/nginx/certs/esgf_slcs_server.key
+    -out /etc/nginx/certs/esgf_slcs_server.pem -extensions v3_ca
+  args:
+    creates: /etc/nginx/certs/esgf_slcs_server.pem
+  when: use_self_signed_ssl_cert
+  notify:
+    - Restart nginx
 
 - name: Install SSL certificate
   copy:
     content: "{{ ssl_certificate }}"
     dest: /etc/nginx/certs/esgf_slcs_server.pem
     mode: "u=r,g=,o="
+  when: not use_self_signed_ssl_cert
   notify:
     - Restart nginx
 
@@ -30,12 +44,13 @@
     content: "{{ ssl_private_key }}"
     dest: /etc/nginx/certs/esgf_slcs_server.key
     mode: "u=r,g=,o="
+  when: not use_self_signed_ssl_cert
   notify:
     - Restart nginx
 
 - name: Install Nginx config
-  template: >
-    src=templates/nginx.conf.j2
-    dest=/etc/nginx/conf.d/esgf_slcs_server.conf
+  template:
+    src: templates/nginx.conf.j2
+    dest: /etc/nginx/conf.d/esgf_slcs_server.conf
   notify:
     - Restart nginx

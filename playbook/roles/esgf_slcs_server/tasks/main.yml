@@ -3,9 +3,10 @@
 - include: install.yml
 
 - include: configure-databases.yml
+  when: configure_databases
 
 - include: install-test-ca.yml
-  when: use_test_ca
+  when: install_test_ca
 
 - include: configure-application.yml
 

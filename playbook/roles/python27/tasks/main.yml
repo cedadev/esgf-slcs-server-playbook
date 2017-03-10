@@ -1,5 +1,4 @@
 ---
-# This role installs Python 2.7
 
 - name: Install IUS Community repository
   yum: name=https://{{ ius_distro }}.iuscommunity.org/ius-release.rpm state=present
@@ -12,3 +11,9 @@
     - python27-virtualenv
     - python27-pip
     - python27-setuptools
+
+- name: Set Python facts
+  set_fact:
+    python_executable: python2.7
+    pip_executable: pip2.7
+    virtualenv_executable: virtualenv-2.7

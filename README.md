@@ -1,7 +1,56 @@
 # esgf-slcs-server-playbook
 
-This repository provides an Ansible playbook that can deploy a [SLCS Server for ESGF](https://github.com/cedadev/esgf-slcs-server).
+This repository provides an Ansible playbook that can deploy the
+[esgf-slcs-server](https://github.com/cedadev/esgf-slcs-server).
 
+
+## Installing the ESGF SLCS Server
+
+**WARNING:** The playbook will only work on CentOS/RHEL 6.x, and has only been
+tested on CentOS 6.8.
+
+Before running the playbook, Ansible must be installed:
+
+```
+$ yum install -y -q epel-release
+$ yum install -y -q ansible
+```
+
+Then clone and execute the playbook. The playbook must be executed as `root`:
+
+```
+$ git clone https://github.com/cedadev/esgf-slcs-server-playbook.git
+$ cd esgf-slcs-server-playbook
+$ sudo ansible-playbook -i playbook/inventories/localhost -e "@path/to/overrides.yml" playbook/playbook.yml
+```
+
+The `ansible-playbook` command includes a reference to an overrides file. This is
+a file that provides the Ansible variables appropriate for your setup.
+
+There are three example override files provided. The variables available for modification
+are documented comprehensively in these files:
+
+  * [production_all.yml](playbook/overrides/production_all.yml): Demonstrates
+    settings for a standalone production installation on a blank machine - ESGF
+    SLCS Django application installed in a virtual environment and configured to
+    run using the Waitress WSGI server proxied by Nginx.
+
+  * [production_install_only.yml](playbook/overrides/production_install_only.yml):
+    Demonstrates settings for installing the ESGF SLCS Django application into an
+    existing Python installation. Does not install or configure a WSGI server or proxy.
+
+  * [development.yml](playbook/overrides/development.yml):
+    Settings for installing the ESGF SLCS Django application for development.
+
+The only one that will run to completion without edits (on purpose - some configuration
+is required) is ``development.yml``, which is used by the Vagrant box (see below).
+
+
+## Running a development sandbox using Vagrant and VirtualBox
+
+## VirtualBox
+
+Vagrant needs a recent [VirtualBox installation](https://www.virtualbox.org/wiki/Downloads).
 
 ## Installing Vagrant
 
@@ -16,23 +65,10 @@ $ wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
 $ sudo dpkg -i vagrant_1.9.1_x86_64.deb
 ```
 
-Install Vagrant plugins used for ESGF SLCS service deployment:
+## Deploying the Vagrant VM
 
-```
-$ vagrant plugin install vagrant-reload
-$ vagrant plugin install ansible
-```
-
-### VirtualBox:
-
-Vagrant needs a recent [VirtualBox installation](https://www.virtualbox.org/wiki/Downloads).
-I'm using VirtualBox 5.1.
-
-## Deploying a test VM using Vagrant
-
-To deploy a test VM using Vagrant, just modify the `config.vm.synced_folder` in
-the `Vagrantfile` to the location where you checked out the ESGF SLCS Server and
-run `vagrant up`.
+First, modify the `config.vm.synced_folder` in the `Vagrantfile` to the location
+where you checked out the ESGF SLCS Server, then run `vagrant up`.
 
 Many OAuth clients that you may use to test the service require that the OAuth server
 runs using HTTPS. Hence everything on the provisioned VM sits behind an Nginx
@@ -49,19 +85,9 @@ $ vagrant ssh
 Starting the Django development server on port 5000 allows Nginx to pick it up as
 a downstream server and pass requests on.
 
-The provisioned VM communicates with the host on a host-only network on which IP
-addresses are allocated using DHCP. This host-only network is attached to the
-`eth1` interface of the provisioned VM. To find out the IP address that the
-provisioned VM is available at, you can use the following commands:
+The ESGF SLCS Server will then be available at `https://172.28.128.7`.
 
-```
-$ vagrant ssh
-[vagrant@localhost ~]$ ifconfig eth1 | grep -oP 'inet addr:\K\S+'
-```
-
-The ESGF SLCS Server will then be available at `https://<ip>`.
-
-The Django adminstration view for configuring OAuth is at: `https://<ip>/admin`.
+The Django administration view for configuring OAuth clients is at: `https://172.28.128.7/admin`.
 
 Ansible sets up a default user database with a test user:
 
@@ -70,7 +96,7 @@ username = another
 password = changeme
 ```
 
-You can change this in the ansible configuration:
+You can change this in the Ansible configuration:
 
 ```
 playbook/roles/esgf_slcs_server/files/create-user-table.sql
@@ -78,10 +104,10 @@ playbook/roles/esgf_slcs_server/files/create-user-table.sql
 
 Changes to Python files in your `esgf-slcs-server` checkout will cause the Django
 development server to reload automatically. However, because the Nginx server is
-now serving static resources, any change to Javascript and CSS files will not be
+serving static resources, any change to Javascript and CSS files will not be
 reflected by the server until the Ansible playbook is re-run to collect the static
 files:
 
 ```
-$ vagrant provision --provision-with=ansible
+[vagrant@localhost ~]$ sudo ansible-playbook -i /vagrant/playbook/inventories/localhost -e "@/vagrant/playbook/overrides/development.yml" /vagrant/playbook/playbook.yml
 ```

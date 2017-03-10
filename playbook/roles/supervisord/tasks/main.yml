@@ -1,10 +1,18 @@
 ---
-# This role installs and configures supervisord using pip
-#
-# It includes a handler for restarting supervisord
+
+- name: Install pip for system Python
+  yum: name={{ item }} state=latest
+  with_items:
+    - epel-release
+    - python-pip
 
 - name: Install supervisord
-  pip: name=supervisor state=latest executable=pip2.7
+  pip: name=supervisor state=latest executable=pip
+  notify:
+    - Restart supervisord
+
+- name: Downgrade meld3 (see https://github.com/puphpet/puphpet/issues/1492)
+  pip: name=meld3 version=1.0.0 executable=pip
   notify:
     - Restart supervisord
 

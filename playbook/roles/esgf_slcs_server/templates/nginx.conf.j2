@@ -42,10 +42,14 @@ server {
     location /static {
         # Strip the /static prefix
         rewrite ^/static/(.*) /$1 break;
-        root /var/www/static;
+        root {{ static_root }};
     }
 
-    {% set proxy_settings %}
+    # Restrict access to the admin
+    location /admin {
+        allow {{ admin_ip_range }};
+        deny all;
+
         proxy_set_header        Host $http_host;
         proxy_set_header        X-Real-IP $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -60,18 +64,23 @@ server {
         proxy_temp_file_write_size 64k;
         proxy_pass                 http://esgf_slcs_server;
         proxy_redirect             off;
-    {% endset %}
-
-    # Restrict access to the admin
-    location /admin {
-        allow {{ admin_ip_range }};
-        deny all;
-
-{{ proxy_settings }}
     }
 
     # Proxy configuration for OAuth server
     location / {
-{{ proxy_settings }}
+        proxy_set_header        Host $http_host;
+        proxy_set_header        X-Real-IP $remote_addr;
+        proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header        X-Forwarded-Proto $scheme;
+
+        client_max_body_size       10m;
+        client_body_buffer_size    128k;
+        proxy_connect_timeout      60s;
+        proxy_send_timeout         90s;
+        proxy_read_timeout         90s;
+        proxy_buffering            off;
+        proxy_temp_file_write_size 64k;
+        proxy_pass                 http://esgf_slcs_server;
+        proxy_redirect             off;
     }
 }

@@ -1,9 +1,2 @@
-esgf_slcs_server_version: master
-
-waitress_instances: 1
 server_protocol: https
 server_root: "{{ server_protocol }}://{{ server_name }}"
-
-onlineca_cert_subject_template: "/DC=esgf/CN=$OPENID"
-
-application_admins: []

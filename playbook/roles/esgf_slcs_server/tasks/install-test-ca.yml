@@ -1,16 +1,15 @@
 ---
-# Tasks related to the installation of the test CA
 
 - name: Make config directory
-  file: path={{ application_home }}/conf state=directory
+  file: path={{ application_home }}/conf/ca state=directory
   become: yes
   become_user: "{{ application_user }}"
 
 - name: Set CA location facts
   set_fact:
-    onlineca_trustroots_dir: "{{ application_home }}/conf/trustroots"
-    onlineca_cert_file: "{{ application_home }}/conf/onlineca.crt"
-    onlineca_key_file: "{{ application_home }}/conf/onlineca.key"
+    onlineca_trustroots_dir: "{{ application_home }}/conf/ca/trustroots"
+    onlineca_cert_file: "{{ application_home }}/conf/ca/onlineca.crt"
+    onlineca_key_file: "{{ application_home }}/conf/ca/onlineca.key"
 
 - name: Install test CA trustroots
   copy: src=files/test_ca/trustroots/ dest={{ onlineca_trustroots_dir }}

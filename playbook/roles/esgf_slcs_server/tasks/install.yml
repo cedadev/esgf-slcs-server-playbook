@@ -1,28 +1,28 @@
 ---
 
+- name: Install gcc
+  yum: name=gcc state=latest
+
 - name: Install cryptography dependencies
   yum: name={{ item }} state=latest
   with_items:
     - libffi-devel
     - openssl-devel
 
+- name: Install psycopg2 dependencies
+  yum: name=postgresql-devel state=latest
+
 - name: Create application user
   user: name={{ application_user }} state=present
 
-- name: Get application home (1)
+- name: Set application home if not defined (1)
   shell: "getent passwd {{ application_user }} | cut -d: -f6"
   when: application_home is not defined
-  changed_when: false
   register: application_home_result
 
-- name: Get application home (2)
+- name: Set application home if not defined (2)
   set_fact:
     application_home: "{{ application_home_result.stdout }}"
   when: application_home is not defined
-
-- name: Ensure application_home exists and belongs to application_user
-  file: >
-    path={{ application_home }} state=directory
-    mode="u=rwx,g=,o=" owner={{ application_user }} group={{ application_user }}
 
 - include: install-{{ install_mode }}.yml

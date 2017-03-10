@@ -1,12 +1,10 @@
 ---
-# This role installs PostgreSQL
 
-- name: Install PostgreSQL
+- name: Install PostgreSQL server
   yum: name={{ item }} state=latest
   with_items:
     - postgresql
     - postgresql-server
-    - postgresql-devel
 
 - name: Initialise PostgreSQL
   command: service postgresql initdb

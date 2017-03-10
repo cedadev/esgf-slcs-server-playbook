@@ -1,0 +1,130 @@
+#####
+## This file contains variable definitions to install and configure the ESGF SLCS
+## server package with an existing Python installation
+#####
+
+#####
+## Server variables (required for Django)
+
+# The name of the server
+#   This should be the domain name by which the machine will be accessed over HTTP
+server_name: www.my-slcs-server.com
+
+# The email address to use for emails sent by the application
+server_email: no-reply@{{ server_name }}
+
+#####
+## Python installation
+
+python_executable: /path/to/python2.7
+pip_executable: /path/to/pip2.7
+#  virtualenv_executable: /path/to/virtualenv-2.7
+
+#####
+## Nginx installation
+
+use_nginx_proxy: false
+
+#####
+## Waitress and supervisord installation
+
+# If true, use the Waitress WSGI server to run the Django app
+#   The Waitress processes are managed using supervisord
+use_waitress_wsgi: false
+
+#####
+## Application installation
+
+# The user to install and run the application as
+#   This should be an unpriveleged user
+#   If the user doesn't exist, they will be created
+application_user: waitress
+
+# The directory in which to install application code
+#   If not given, this defaults to the home directory of the application_user
+#   Must be readable and writable by the application_user
+# application_home: /path/to/application/home
+
+# The installation mode
+#   Valid values are 'production' and 'development'
+#   Development mode assumes the esgf-slcs-server code is available at
+#   /code/esgf-slcs-server, and is designed primarily for use with the Vagrant box
+install_mode: production
+
+# The ESGF SLCS server version to install
+#   Only used in production
+#   Can be any valid branch, tag or commit hash from https://github.com/cedadev/esgf-slcs-server
+esgf_slcs_server_version: master
+
+# If true, install esgf-slcs-server in a virtualenv, otherwise install globally
+use_virtual_env: false
+
+#####
+## Database setup and configuration
+
+# If true, configure a new local database for the SLCS Django app and optionally
+#   configure a dummy ESGF user database (see use_dummy_userdb below)
+# If false, esgf_slcsdb and esgf_userdb dictionaries must be manually configured
+configure_databases: false
+
+# Required if configure_databases = false
+# Configures access to a database that the ESGF SLCS service can use
+# This is in addition to existing ESGF databases, and managed with Django migrations
+esgf_slcsdb:
+  engine: 'django.db.backends.postgresql'
+  name: 'esgf_slcs_db_name'
+  host: my-db-host.example.com
+  port: 5432
+  user: db_user
+  password: db_password
+
+# Only used if configure_databases = true
+# If true, install and populate a dummy ESGF user database
+use_dummy_userdb: false
+
+# Required if configure_databases = false or use_dummy_userdb = false
+# Configures access to the database containing the ESGF user table
+# Only read-only access is required
+esgf_userdb:
+  engine: 'django.db.backends.postgresql'
+  name: 'esgf_security_db_name'
+  host: my-db-host.example.com
+  port: 5432
+  user: db_user
+  password: db_password
+
+#####
+## CA setup and configuration
+
+# If true, install the test CA
+install_test_ca: false
+
+# If install_test_ca = false, the following variables must be set
+#   They should point to the same CA used for myproxy for consistency
+onlineca_cert_file: /path/to/ca/cert.pem
+onlineca_key_file: /path/to/ca/private.key
+onlineca_trustroots_dir: /path/to/ca/trustroots
+
+# Template for the subject of certificates issued by the SLCS server
+#   $OPENID is replaced with the user's OpenID
+onlineca_cert_subject_template: "/DC=esgf/CN=$OPENID"
+
+#####
+## Application configuration
+
+# If true, run Django in debug mode
+#   Should (obviously!) be false in production
+django_debug_mode: false
+
+# A list of people to receive emails when errors happen
+#   Used to populate the Django ADMINS setting - see
+#   https://docs.djangoproject.com/en/1.10/ref/settings/#admins
+application_admins: []
+
+# The location where static files should be collected
+#   Must always be defined, but only used if Nginx is enabled
+static_root: /var/www/static
+
+# The username in the ESGF user table of the user that should be the Django superuser
+#   This user gets full access to the Django admin
+django_superuser: another

@@ -1,5 +1,4 @@
 ---
-# This role ensures that git is installed
 
 - name: Install git
   yum: name=git state=latest

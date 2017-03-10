@@ -1,7 +1,4 @@
 ---
-# This role installs and starts Nginx and does some basic configuration
-#
-# It also provides a handler for restarting Nginx
 
 - name: Install nginx repository
   template: src=templates/nginx.repo.j2 dest=/etc/yum.repos.d/nginx.repo

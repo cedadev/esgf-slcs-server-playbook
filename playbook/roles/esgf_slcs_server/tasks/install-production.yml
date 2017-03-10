@@ -5,42 +5,41 @@
     code_location: "{{ application_home }}/src/esgf_slcs_server"
 
 - name: Clone ESGF SLCS Server from Github
-  git: >
-    repo=https://github.com/cedadev/esgf-slcs-server.git
-    version={{ esgf_slcs_server_version }}
-    dest={{ code_location }}
-    accept_hostkey=yes
+  git:
+    repo: https://github.com/cedadev/esgf-slcs-server.git
+    version: "{{ esgf_slcs_server_version }}"
+    dest: "{{ code_location }}"
   become: yes
   become_user: "{{ application_user }}"
-  register: esgf_slcs_clone
 
-- name: Destroy previous venv
+- name: Remove existing virtual env
   file: path={{ application_home }}/venv state=absent
+
+- name: Create virtual env
+  shell: "{{ virtualenv_executable }} {{ application_home }}/venv"
   become: yes
   become_user: "{{ application_user }}"
-  when: esgf_slcs_clone|changed
-  notify:
-    - Restart ESGF SLCS Server
+  when: use_virtual_env
+
+- name: Set Python facts
+  set_fact:
+    python_executable: "{{ application_home }}/venv/bin/python"
+    pip_executable: "{{ application_home }}/venv/bin/pip"
+  when: use_virtual_env
 
 - name: Install ESGF SLCS Server dependencies
-  pip: >
-    requirements={{ code_location }}/requirements.txt
-    virtualenv={{ application_home }}/venv
-    virtualenv_command=virtualenv-2.7
+  pip:
+    requirements: "{{ code_location }}/requirements.txt"
+    executable: "{{ pip_executable }}"
   become: yes
   become_user: "{{ application_user }}"
-  when: esgf_slcs_clone|changed
-  notify:
-    - Restart ESGF SLCS Server
 
 - name: Install ESGF SLCS Server
-  pip: >
-    name={{ code_location }}
-    virtualenv={{ application_home }}/venv
-    virtualenv_command=virtualenv-2.7
-    extra_args='--no-deps -e'
+  pip:
+    name: "{{ code_location }}"
+    executable: "{{ pip_executable }}"
+    extra_args: "--no-deps -e"
   become: yes
   become_user: "{{ application_user }}"
-  when: esgf_slcs_clone|changed
   notify:
     - Restart ESGF SLCS Server

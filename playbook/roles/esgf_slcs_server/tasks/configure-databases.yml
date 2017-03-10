@@ -5,10 +5,10 @@
   yum: name=python-psycopg2 state=latest
 
 - name: Create PostgreSQL IDENT user for application
-  postgresql_user: >
-    name={{ application_user }}
-    state=present
-    role_attr_flags=NOCREATEDB,NOCREATEROLE,NOSUPERUSER
+  postgresql_user:
+    name: "{{ application_user }}"
+    state: "present"
+    role_attr_flags: "NOCREATEDB,NOCREATEROLE,NOSUPERUSER"
   become: yes
   become_user: postgres
 
@@ -16,6 +16,12 @@
   postgresql_db: name=esgf_slcs_server encoding="UTF-8" owner={{ application_user }}
   become: yes
   become_user: postgres
+
+- name: Set esgf_slcsdb config variable
+  set_fact:
+    esgf_slcsdb:
+      engine: django.db.backends.postgresql
+      name: esgf_slcs_server
 
 - name: Create dummy userdb database
   postgresql_db: name=esgf_security encoding="UTF-8" owner={{ application_user }}
@@ -32,10 +38,17 @@
   command: psql -d esgf_security -f /tmp/create-user-table.sql -a
   become: yes
   become_user: "{{ application_user }}"
-  when: create_userdb|changed
   register: create_user_table
   failed_when: "'ERROR' in create_user_table.stderr"
+  when: create_userdb|changed
 
 - name: Remove dummy userdb script
   file: path=/tmp/create-user-table.sql state=absent
   when: create_userdb|changed
+
+- name: Set esgf_userdb config variable
+  set_fact:
+    esgf_userdb:
+      engine: django.db.backends.postgresql
+      name: esgf_security
+  when: use_dummy_userdb

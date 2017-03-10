@@ -5,10 +5,8 @@
   force_handlers: yes
   roles:
     - git
-    - svn
-    - gcc
-    - python27
-    - postgresql
+    - { role: python27, when: python_executable is not defined }
+    - { role: postgresql, when: configure_databases }
     - { role: nginx, when: use_nginx_proxy }
     - { role: supervisord, when: use_waitress_wsgi }
     - esgf_slcs_server
