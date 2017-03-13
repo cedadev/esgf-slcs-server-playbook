@@ -15,29 +15,19 @@
 - name: Remove existing virtual env
   file: path={{ application_home }}/venv state=absent
 
-- name: Create virtual env
-  shell: "{{ virtualenv_executable }} {{ application_home }}/venv"
-  become: yes
-  become_user: "{{ application_user }}"
-  when: use_virtual_env
-
-- name: Set Python facts
-  set_fact:
-    python_executable: "{{ application_home }}/venv/bin/python"
-    pip_executable: "{{ application_home }}/venv/bin/pip"
-  when: use_virtual_env
-
 - name: Install ESGF SLCS Server dependencies
   pip:
     requirements: "{{ code_location }}/requirements.txt"
-    executable: "{{ pip_executable }}"
+    virtualenv: "{{ application_home }}/venv"
+    virtualenv_command: "{{ virtualenv_command }}"
   become: yes
   become_user: "{{ application_user }}"
 
 - name: Install ESGF SLCS Server
   pip:
     name: "{{ code_location }}"
-    executable: "{{ pip_executable }}"
+    virtualenv: "{{ application_home }}/venv"
+    virtualenv_command: "{{ virtualenv_command }}"
     extra_args: "--no-deps -e"
   become: yes
   become_user: "{{ application_user }}"

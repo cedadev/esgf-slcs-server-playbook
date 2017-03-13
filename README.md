@@ -35,15 +35,19 @@ are documented comprehensively in these files:
     SLCS Django application installed in a virtual environment and configured to
     run using the Waitress WSGI server proxied by Nginx.
 
-  * [production_install_only.yml](playbook/overrides/production_install_only.yml):
-    Demonstrates settings for installing the ESGF SLCS Django application into an
-    existing Python installation. Does not install or configure a WSGI server or proxy.
+  * [production_venv_only.yml](playbook/overrides/production_venv_only.yml):
+    Demonstrates settings for installing the ESGF SLCS Django application into a
+    virtual environment using an existing Python installation. Does not install
+    or configure the WSGI server or proxy, or any databases.
 
   * [development.yml](playbook/overrides/development.yml):
-    Settings for installing the ESGF SLCS Django application for development.
+    Settings for installing the ESGF SLCS Django application for development,
+    primarily for use with the Vagrant box.
 
-The only one that will run to completion without edits (on purpose - some configuration
-is required) is ``development.yml``, which is used by the Vagrant box (see below).
+The only one that will run to completion without edits is ``development.yml``,
+which is used by the Vagrant box (see below). This is because some configuration
+is required for a production install (in particular of databases and the CA that
+issues the short-lived certificates).
 
 
 ## Running a development sandbox using Vagrant and VirtualBox

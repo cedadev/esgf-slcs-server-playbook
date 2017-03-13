@@ -20,10 +20,8 @@ server_email: no-reply@{{ server_name }}
 #   Valid values are 'rhel6', 'centos6'
 ius_distro: centos6
 
-# To use an existing Python 2.7 installation, set these variables instead
-#  python_executable: /path/to/python2.7
-#  pip_executable: /path/to/pip2.7
-#  virtualenv_executable: /path/to/virtualenv-2.7
+# To use an existing Python 2.7 installation, set this variable instead
+#  virtualenv_command: /path/to/virtualenv-2.7
 
 #####
 ## Nginx installation
@@ -134,9 +132,6 @@ install_mode: production
 #   Can be any valid branch, tag or commit hash from https://github.com/cedadev/esgf-slcs-server
 esgf_slcs_server_version: master
 
-# If true, install esgf-slcs-server in a virtualenv, otherwise install globally
-use_virtual_env: true
-
 #####
 ## Database setup and configuration
 
@@ -178,7 +173,8 @@ use_dummy_userdb: false
 install_test_ca: false
 
 # If install_test_ca = false, the following variables must be set
-#   They should point to the same CA used for myproxy for consistency
+#   They should point to the same CA used for myproxy for consistency, and must
+#   be readable by the application_user
 onlineca_cert_file: /path/to/ca/cert.pem
 onlineca_key_file: /path/to/ca/private.key
 onlineca_trustroots_dir: /path/to/ca/trustroots
@@ -200,7 +196,6 @@ django_debug_mode: false
 application_admins: []
 
 # The location where static files should be collected
-#   Must always be defined, but only used if Nginx is enabled
 static_root: /var/www/static
 
 # The username in the ESGF user table of the user that should be the Django superuser

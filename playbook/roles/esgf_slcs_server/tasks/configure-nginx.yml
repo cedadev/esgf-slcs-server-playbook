@@ -4,9 +4,6 @@
 - name: Create static dir
   file: path={{ static_root }} state=directory
 
-- name: Collect static files
-  shell: "{{ python_executable }} {{ code_location }}/manage.py collectstatic --noinput --clear"
-
 - name: Transfer ownership of static files to nginx
   file:
     path: "{{ static_root }}"

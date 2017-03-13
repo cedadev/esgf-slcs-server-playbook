@@ -58,14 +58,22 @@
     - Restart ESGF SLCS Server
 
 - name: Run database migrations
-  shell: "{{ python_executable }} {{ code_location }}/manage.py migrate"
+  shell: "{{ application_home }}/venv/bin/python {{ code_location }}/manage.py migrate"
   become: yes
   become_user: "{{ application_user }}"
 
 - name: Create Django superuser
-  shell: "{{ python_executable }} {{ code_location }}/manage.py createsuperuser --noinput --username={{ django_superuser }} --email=notused@notused.com"
+  shell: >
+    {{ application_home }}/venv/bin/python  \
+    {{ code_location }}/manage.py createsuperuser  \
+    --noinput --username={{ django_superuser }} --email=notused@notused.com
   become: yes
   become_user: "{{ application_user }}"
   register: create_superuser
   changed_when: create_superuser.rc == 0
   failed_when: "create_superuser.rc != 0 and 'duplicate key value violates unique constraint' not in create_superuser.stderr"
+
+- name: Collect static files
+  shell: >
+    {{ application_home }}/venv/bin/python  \
+    {{ code_location }}/manage.py collectstatic --noinput --clear

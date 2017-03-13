@@ -1,14 +1,11 @@
 ---
 
-- name: Require virtual env
-  fail: msg="Waitress can only be used with a virtual env installation"
-  when: not use_virtual_env
-
 - name: Install Waitress
   pip:
     name: waitress
     state: latest
-    executable: "{{ pip_executable }}"
+    virtualenv: "{{ application_home }}/venv"
+    virtualenv_command: "{{ virtualenv_command }}"
   become: yes
   become_user: "{{ application_user }}"
   notify:

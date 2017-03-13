@@ -21,10 +21,8 @@ server_email: no-reply@{{ server_name }}
 #   Valid values are 'rhel6', 'centos6'
 ius_distro: centos6
 
-# To use an existing Python 2.7 installation, set these variables instead
-#  python_executable: /path/to/python2.7
-#  pip_executable: /path/to/pip2.7
-#  virtualenv_executable: /path/to/virtualenv-2.7
+# To use an existing Python 2.7 installation, set this variable instead
+#  virtualenv_command: /path/to/virtualenv-2.7
 
 #####
 ## Nginx installation
@@ -75,9 +73,6 @@ application_user: vagrant
 #   /code/esgf-slcs-server, and is designed primarily for use with the Vagrant box
 install_mode: development
 
-# If true, install esgf-slcs-server in a virtualenv, otherwise install globally
-use_virtual_env: true
-
 #####
 ## Database setup and configuration
 
@@ -108,7 +103,6 @@ onlineca_cert_subject_template: "/DC=esgf/CN=$OPENID"
 django_debug_mode: true
 
 # The location where static files should be collected
-#   Must always be defined, but only used if Nginx is enabled
 static_root: /var/www/static
 
 # The username in the ESGF user table of the user that should be the Django superuser

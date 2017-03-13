@@ -14,6 +14,4 @@
 
 - name: Set Python facts
   set_fact:
-    python_executable: python2.7
-    pip_executable: pip2.7
-    virtualenv_executable: virtualenv-2.7
+    virtualenv_command: virtualenv-2.7

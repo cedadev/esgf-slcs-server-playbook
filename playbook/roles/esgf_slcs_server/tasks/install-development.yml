@@ -2,28 +2,17 @@
 
 - name: Destroy previous venv
   file: path={{ application_home }}/venv state=absent
-  become: yes
-  become_user: "{{ application_user }}"
-
-- name: Require virtual env
-  fail: msg="Development mode can only be used with a virtual env installation"
-  when: not use_virtual_env
 
 - name: Install ESGF SLCS Server from /code/esgf-slcs-server
   pip:
     name: /code/esgf-slcs-server
     virtualenv: "{{ application_home }}/venv"
-    virtualenv_command: "{{ virtualenv_executable }}"
+    virtualenv_command: "{{ virtualenv_command }}"
     extra_args: "-e"
   become: yes
   become_user: "{{ application_user }}"
   notify:
     - Restart ESGF SLCS Server
-
-- name: Set Python facts
-  set_fact:
-    python_executable: "{{ application_home }}/venv/bin/python"
-    pip_executable: "{{ application_home }}/venv/bin/pip"
 
 - name: Set code_location fact
   set_fact:
