@@ -4,7 +4,7 @@ This repository provides an Ansible playbook that can deploy the
 [esgf-slcs-server](https://github.com/cedadev/esgf-slcs-server).
 
 
-## Installing the ESGF SLCS Server
+## Installing the ESGF SLCS Server
 
 **WARNING:** The playbook will only work on CentOS/RHEL 6.x, and has only been
 tested on CentOS 6.8.
@@ -50,17 +50,17 @@ is required for a production install (in particular of databases and the CA that
 issues the short-lived certificates).
 
 
-## Running a development sandbox using Vagrant and VirtualBox
+## Running a development sandbox using Vagrant and VirtualBox
 
-## VirtualBox
+### VirtualBox
 
 Vagrant needs a recent [VirtualBox installation](https://www.virtualbox.org/wiki/Downloads).
 
-## Installing Vagrant
+### Installing Vagrant
 
 See the [Vagrant documentation](https://www.vagrantup.com/docs/installation/) for installation details.
 
-### Debian/Ubuntu/LinuxMint:
+#### Debian/Ubuntu/LinuxMint:
 
 Ubuntu has a vagrant package but it is outdated. You can install Vagrant manually:
 
@@ -69,7 +69,7 @@ $ wget https://releases.hashicorp.com/vagrant/1.9.1/vagrant_1.9.1_x86_64.deb
 $ sudo dpkg -i vagrant_1.9.1_x86_64.deb
 ```
 
-## Deploying the Vagrant VM
+### Deploying the Vagrant VM
 
 First, modify the `config.vm.synced_folder` in the `Vagrantfile` to the location
 where you checked out the ESGF SLCS Server, then run `vagrant up`.
