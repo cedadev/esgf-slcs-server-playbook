@@ -54,3 +54,13 @@ onlineca.server.cert_subject_name_template: {{ onlineca_cert_subject_template }}
 # trustroots call.  It is vital that this is path is carefully selected and
 # checked.
 onlineca.server.trustroots_dir: {{ onlineca_trustroots_dir }}
+
+# Comma delimited list of PEM-encoded certificate files corresponding to
+# CA trustroot files to be returned in the certificate issuing response.  These
+# are concatenated with the new issued certificate.   This setting is optional
+# and may be useful where the client's trust roots do not contain the complete
+# chain of trust from the newly issued cert and a root certificate.  This
+# option does not apply if the CA for this service is itself a root CA.
+{% if onlineca_cacert_chain_filepaths is defined %}
+onlineca.server.cacert_chain_filepaths: {{ onlineca_cacert_chain_filepaths|join(",") }}
+{% endif %}

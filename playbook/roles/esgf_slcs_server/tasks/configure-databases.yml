@@ -22,6 +22,8 @@
     esgf_slcsdb:
       engine: django.db.backends.postgresql
       name: esgf_slcs_server
+      # Required because postgresql is configured to put socket files in /tmp by default
+      host: /tmp
 
 - name: Create dummy userdb database
   postgresql_db: name=esgf_security encoding="UTF-8" owner={{ application_user }}
@@ -51,4 +53,6 @@
     esgf_userdb:
       engine: django.db.backends.postgresql
       name: esgf_security
+      # Required because postgresql is configured to put socket files in /tmp by default
+      host: /tmp
   when: use_dummy_userdb

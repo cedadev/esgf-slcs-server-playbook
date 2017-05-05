@@ -10,6 +10,11 @@
     onlineca_trustroots_dir: "{{ application_home }}/conf/ca/trustroots"
     onlineca_cert_file: "{{ application_home }}/conf/ca/onlineca.crt"
     onlineca_key_file: "{{ application_home }}/conf/ca/onlineca.key"
+    ## NOTE: These certificates are just for testing, and have no correspondence
+    #        with the chain of trust
+    onlineca_cacert_chain_filepaths:
+      - "{{ application_home }}/conf/ca/trustroots/08bd99c7.0"
+      - "{{ application_home }}/conf/ca/trustroots/ade0138a.0"
 
 - name: Install test CA trustroots
   copy: src=files/test_ca/trustroots/ dest={{ onlineca_trustroots_dir }}

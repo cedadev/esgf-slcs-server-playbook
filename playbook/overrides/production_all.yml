@@ -172,12 +172,19 @@ use_dummy_userdb: false
 # If true, install the test CA
 install_test_ca: false
 
-# If install_test_ca = false, the following variables must be set
+# If install_test_ca = false, the following variables should be set
 #   They should point to the same CA used for myproxy for consistency, and must
 #   be readable by the application_user
 onlineca_cert_file: /path/to/ca/cert.pem
 onlineca_key_file: /path/to/ca/private.key
 onlineca_trustroots_dir: /path/to/ca/trustroots
+# OPTIONAL: A list of additional certificates which are concatenated with the
+#           newly issued user certificate in the response. May be useful where
+#           the client's trust roots do not contain the complete chain of trust
+#           betweem the newly issued cert and a root certificate.
+onlineca_cacert_chain_filepaths:
+  - /path/to/cert1
+  - /path/to/cert2
 
 # Template for the subject of certificates issued by the SLCS server
 #   $OPENID is replaced with the user's OpenID
