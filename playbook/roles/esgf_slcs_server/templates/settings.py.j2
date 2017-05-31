@@ -133,12 +133,12 @@ DATABASES = {
 {% if 'password' in esgf_slcsdb %}
 ESGF_SLCSDB_PASSWD_FILE = '{{ application_home }}/conf/app/slcsdb_passwd.txt'
 with open(ESGF_SLCSDB_PASSWD_FILE) as f:
-    DATABASES['default']['password'] = f.read().strip()
+    DATABASES['default']['PASSWORD'] = f.read().strip()
 {% endif %}
 {% if 'password' in esgf_userdb %}
 ESGF_USERDB_PASSWD_FILE = '{{ application_home }}/conf/app/userdb_passwd.txt'
 with open(ESGF_USERDB_PASSWD_FILE) as f:
-    DATABASES['userdb']['password'] = f.read().strip()
+    DATABASES['userdb']['PASSWORD'] = f.read().strip()
 {% endif %}
 
 
